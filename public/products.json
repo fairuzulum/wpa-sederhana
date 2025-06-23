@@ -22,5 +22,101 @@
       { "name": "Berat", "value": "2.1 kg" },
       { "name": "Material", "value": "Carbon Fiber & Glass" }
     ]
-  }
+  },
+  {
+    "id": "prod-003",
+    "name": "Produk Multifungsi C",
+    "short_description": "Fleksibilitas tinggi untuk berbagai kebutuhan.",
+    "price": "Rp 3.200.000",
+    "image": "/images/produk-c.jpg",
+    "specifications": [
+      { "name": "Dimensi", "value": "20 x 30 x 10 cm" },
+      { "name": "Berat", "value": "3.5 kg" },
+      { "name": "Material", "value": "Aluminium & Plastic Composite" }
+    ]
+  },
+  {
+    "id": "prod-004",
+    "name": "Produk Ramah Lingkungan D",
+    "short_description": "Inovasi hijau untuk masa depan yang berkelanjutan.",
+    "price": "Rp 1.800.000",
+    "image": "/images/produk-d.jpg",
+    "specifications": [
+      { "name": "Dimensi", "value": "12 x 22 x 6 cm" },
+      { "name": "Berat", "value": "1.5 kg" },
+      { "name": "Material", "value": "Recycled Materials" }
+    ]
+  },
+    {
+        "id": "prod-005",
+        "name": "Produk Pintar E",
+        "short_description": "Teknologi pintar untuk kehidupan sehari-hari.",
+        "price": "Rp 4.500.000",
+        "image": "/images/produk-e.jpg",
+        "specifications": [
+        { "name": "Dimensi", "value": "18 x 28 x 7 cm" },
+        { "name": "Berat", "value": "2.8 kg" },
+        { "name": "Material", "value": "Smart Alloy & High-Density Plastic" }
+        ]
+    },
+    {
+        "id": "prod-006",
+        "name": "Produk Premium F",
+        "short_description": "Kualitas premium untuk pengalaman terbaik.",
+        "price": "Rp 5.000.000",
+        "image": "/images/produk-f.jpg",
+        "specifications": [
+        { "name": "Dimensi", "value": "25 x 35 x 12 cm" },
+        { "name": "Berat", "value": "4.0 kg" },
+        { "name": "Material", "value": "Luxury Leather & Stainless Steel" }
+        ]
+    },
+    {
+        "id": "prod-007",
+        "name": "Produk Inovatif G",
+        "short_description": "Inovasi terbaru untuk efisiensi maksimal.",
+        "price": "Rp 3.800.000",
+        "image": "/images/produk-g.jpg",
+        "specifications": [
+        { "name": "Dimensi", "value": "22 x 32 x 9 cm" },
+        { "name": "Berat", "value": "3.0 kg" },
+        { "name": "Material", "value": "Advanced Composite Materials" }
+        ]
+    },
+    {
+        "id": "prod-008",
+        "name": "Produk Stylish H",
+        "short_description": "Desain modern untuk gaya hidup kontemporer.",
+        "price": "Rp 2.200.000",
+        "image": "/images/produk-h.jpg",
+        "specifications": [
+            { "name": "Dimensi", "value": "16 x 26 x 7 cm" },
+            { "name": "Berat", "value": "2.0 kg" },
+            { "name": "Material", "value": "Synthetic Leather & Metal" }
+        ]
+    },
+    {
+        "id": "prod-009",
+        "name": "Produk Ergonomis I",
+        "short_description": "Desain ergonomis untuk kenyamanan maksimal.",
+        "price": "Rp 2.900.000",
+        "image": "/images/produk-i.jpg",
+        "specifications": [
+            { "name": "Dimensi", "value": "14 x 24 x 6 cm" },
+            { "name": "Berat", "value": "1.8 kg" },
+            { "name": "Material", "value": "Ergonomic Foam & Durable Fabric" }
+        ]
+    },
+    {
+        "id": "prod-010",
+        "name": "Produk Futuristik J",
+        "short_description": "Desain futuristik dengan teknologi mutakhir.",
+        "price": "Rp 6.000.000",
+        "image": "/images/produk-j.jpg",
+        "specifications": [
+            { "name": "Dimensi", "value": "30 x 40 x 15 cm" },
+            { "name": "Berat", "value": "5.0 kg" },
+            { "name": "Material", "value": "High-Tech Alloy & Smart Glass" }
+        ]
+    }
 ]

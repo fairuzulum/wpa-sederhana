@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted } from "vue";
 
 const products = ref([]);
 const isLoading = ref(true);
@@ -7,9 +7,9 @@ const isLoading = ref(true);
 // Fungsi untuk fetch data
 async function fetchProducts() {
   try {
-    const response = await fetch('/products.json');
+    const response = await fetch("/products.json");
     if (!response.ok) {
-      throw new Error('Gagal memuat data produk');
+      throw new Error("Gagal memuat data produk");
     }
     products.value = await response.json();
   } catch (error) {
@@ -31,14 +31,17 @@ onMounted(() => {
     <header>
       <h1>Katalog Produk Digital</h1>
     </header>
-    
+
     <main>
-      <div v-if="isLoading" class="loader">
-        Memuat data...
-      </div>
+      <div v-if="isLoading" class="loader">Memuat data...</div>
       <div v-else class="product-grid">
         <div v-for="product in products" :key="product.id" class="product-card">
-          <img :src="product.image" :alt="product.name" class="product-image" />
+          <img
+            :src="product.image"
+            :alt="product.name"
+            class="product-image"
+            loading="lazy"
+          />
           <div class="product-info">
             <h2>{{ product.name }}</h2>
             <p>{{ product.short_description }}</p>
@@ -75,7 +78,7 @@ header {
 .product-card {
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;
   transition: transform 0.3s ease;
 }
