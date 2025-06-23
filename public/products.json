@@ -1,0 +1,26 @@
+[
+  {
+    "id": "prod-001",
+    "name": "Produk Canggih A",
+    "short_description": "Solusi inovatif untuk kebutuhan modern.",
+    "price": "Rp 1.500.000",
+    "image": "/images/produk-a.jpg",
+    "specifications": [
+      { "name": "Dimensi", "value": "10 x 20 x 5 cm" },
+      { "name": "Berat", "value": "1.2 kg" },
+      { "name": "Material", "value": "Titanium Alloy" }
+    ]
+  },
+  {
+    "id": "prod-002",
+    "name": "Produk Elegan B",
+    "short_description": "Desain premium dengan performa maksimal.",
+    "price": "Rp 2.750.000",
+    "image": "/images/produk-b.jpg",
+    "specifications": [
+      { "name": "Dimensi", "value": "15 x 25 x 8 cm" },
+      { "name": "Berat", "value": "2.1 kg" },
+      { "name": "Material", "value": "Carbon Fiber & Glass" }
+    ]
+  }
+]
