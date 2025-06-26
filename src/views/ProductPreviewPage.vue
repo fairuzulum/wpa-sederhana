@@ -36,11 +36,7 @@ const emit = defineEmits(['navigate', 'view-detail']);
 </template>
 
 <style scoped>
-.product-grid { 
-  display: grid; 
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-  gap: 24px; 
-}
+
 .page-header { 
   margin-bottom: 24px; 
   display: flex; 
