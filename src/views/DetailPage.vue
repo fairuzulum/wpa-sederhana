@@ -1,8 +1,14 @@
 <script setup>
+import { ref, watch, computed } from 'vue'; // 1. Tambahkan 'computed'
 import { marked } from 'marked';
 import ProductCard from '../components/ProductCard.vue';
 
-defineProps({
+// 2. Impor library Lightbox yang baru di-install
+import VueEasyLightbox from 'vue-easy-lightbox';
+import 'vue-easy-lightbox/dist/external-css/vue-easy-lightbox.css';
+
+
+const props = defineProps({
   product: {
     type: Object,
     required: true
@@ -15,6 +21,52 @@ defineProps({
 
 const emit = defineEmits(['navigate', 'view-detail']);
 const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
+
+// State untuk gambar utama yang aktif (tidak berubah)
+const selectedImage = ref(null);
+
+// --- LOGIKA BARU UNTUK LIGHTBOX ---
+
+// 3. State baru untuk mengontrol lightbox
+const lightboxVisible = ref(false); // Untuk buka/tutup lightbox
+const lightboxIndex = ref(0);     // Untuk mengingat gambar mana yang sedang ditampilkan di lightbox
+
+// 4. Computed property untuk menyiapkan daftar gambar untuk lightbox
+// Library ini butuh array berisi URL gambar lengkap
+const imagesForLightbox = computed(() => {
+  if (!props.product?.images || props.product.images.length === 0) {
+    return [];
+  }
+  return props.product.images.map(img => `${STRAPI_BASE_URL}${img.url}`);
+});
+
+// 5. Fungsi-fungsi baru untuk mengelola lightbox
+function showLightbox() {
+  // Cari index dari gambar yang sedang aktif ditampilkan
+  const currentIndex = props.product.images.findIndex(img => img.id === selectedImage.value.id);
+  lightboxIndex.value = currentIndex >= 0 ? currentIndex : 0;
+  lightboxVisible.value = true; // Buka lightbox
+}
+
+function hideLightbox() {
+  lightboxVisible.value = false; // Tutup lightbox
+}
+
+
+// Fungsi lama untuk ganti gambar utama (tidak berubah)
+function changeMainImage(imageObject) {
+  selectedImage.value = imageObject;
+}
+
+// Watcher (tidak berubah)
+watch(() => props.product, (newProduct) => {
+  if (newProduct && newProduct.images?.length > 0) {
+    selectedImage.value = newProduct.images[0];
+  } else {
+    selectedImage.value = null;
+  }
+}, { immediate: true });
+
 </script>
 
 <template>
@@ -23,15 +75,30 @@ const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
       <button @click="emit('navigate', 'catalog')" class="back-btn">&larr; Kembali ke Katalog</button>
     </div>
 
-    <div class="detail-layout">
+    <div v-if="product" class="detail-layout">
       <div class="gallery-and-desc2">
         <div class="gallery-container">
           <div class="main-image-wrapper">
-            <img v-if="product.images?.length > 0" :src="`${STRAPI_BASE_URL}${product.images[0].url}`" :alt="product.name" class="main-image"/>
+            <img 
+              v-if="selectedImage" 
+              :src="`${STRAPI_BASE_URL}${selectedImage.url}`" 
+              :alt="product.name" 
+              class="main-image"
+              @click="showLightbox"
+              style="cursor: pointer;"
+            />
             <div v-else class="placeholder-image"><span>No Image</span></div>
           </div>
           <div class="thumbnail-strip" v-if="product.images?.length > 1">
-            <img v-for="img in product.images" :key="img.id" :src="`${STRAPI_BASE_URL}${img.formats.thumbnail.url}`" :alt="`Thumbnail ${img.name}`" class="thumbnail-image"/>
+            <img 
+              v-for="img in product.images" 
+              :key="img.id" 
+              :src="`${STRAPI_BASE_URL}${img.formats.thumbnail.url}`" 
+              :alt="`Thumbnail ${img.name}`" 
+              class="thumbnail-image"
+              :class="{ active: selectedImage && selectedImage.id === img.id }"
+              @click="changeMainImage(img)"
+            />
           </div>
         </div>
         <div class="description-section bottom" v-if="product.deskripsi_2">
@@ -47,7 +114,7 @@ const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
       </div>
     </div>
 
-    <div class="other-products-section">
+    <div class="other-products-section" v-if="otherProducts.length > 0">
       <hr>
       <h3>Produk Lainnya</h3>
       <div class="product-grid-simple">
@@ -60,11 +127,27 @@ const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
       </div>
       <button @click="emit('navigate', 'catalog')" class="menu-btn">Lihat Semua Produk</button>
     </div>
+
+    <VueEasyLightbox
+      :visible="lightboxVisible"
+      :imgs="imagesForLightbox"
+      :index="lightboxIndex"
+      @hide="hideLightbox"
+    ></VueEasyLightbox>
+
   </div>
 </template>
 
 <style scoped>
-/* Style ini spesifik untuk Halaman Detail */
+/* Tambahkan style untuk cursor di gambar utama */
+.main-image:hover {
+  opacity: 0.9;
+}
+
+/* ... semua style dari sebelumnya tidak berubah ... */
+.thumbnail-image.active { border-color: #007bff; opacity: 1; }
+.thumbnail-image { border: 2px solid transparent; opacity: 0.7; transition: all 0.2s ease; }
+.thumbnail-image:hover { opacity: 1; }
 .detail-layout { display: grid; grid-template-columns: 2fr 3fr; gap: 32px; }
 @media (max-width: 768px) { .detail-layout { grid-template-columns: 1fr; } }
 .main-description { background: #fff; padding: 24px; border-radius: 12px; }

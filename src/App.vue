@@ -2,25 +2,30 @@
 import { ref, onMounted, computed } from "vue";
 
 // Import halaman-halaman kita
-import HomePage from './views/HomePage.vue';
-import CatalogPage from './views/CatalogPage.vue';
-import DetailPage from './views/DetailPage.vue';
+import HomePage from "./views/HomePage.vue";
+import CatalogPage from "./views/CatalogPage.vue";
+import DetailPage from "./views/DetailPage.vue";
+import ProductPreviewPage from "./views/ProductPreviewPage.vue";
 
 // --- STATE MANAGEMENT ---
 const products = ref([]);
 const isLoading = ref(true);
-const currentPage = ref('home');
+const currentPage = ref("home");
 const selectedProductId = ref(null);
 
 const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
 const PRODUCTS_API_URL = `${STRAPI_BASE_URL}/api/products?populate=*`;
+
+const previewProducts = computed(() => {
+  return products.value.slice(0, 6);
+});
 
 // --- DATA LOGIC ---
 async function fetchData() {
   isLoading.value = true;
   try {
     const response = await fetch(PRODUCTS_API_URL);
-    if (!response.ok) throw new Error('Gagal memuat data produk.');
+    if (!response.ok) throw new Error("Gagal memuat data produk.");
     const productsData = await response.json();
     products.value = Array.isArray(productsData.data) ? productsData.data : [];
   } catch (error) {
@@ -36,13 +41,13 @@ onMounted(() => {
 });
 
 const selectedProduct = computed(() => {
-  return products.value.find(p => p.id === selectedProductId.value) || null;
+  return products.value.find((p) => p.id === selectedProductId.value) || null;
 });
 
 const otherProducts = computed(() => {
   if (!selectedProduct.value) return [];
   return products.value
-    .filter(p => p.id !== selectedProduct.value.id)
+    .filter((p) => p.id !== selectedProduct.value.id)
     .slice(0, 2);
 });
 
@@ -54,7 +59,7 @@ function navigateTo(page) {
 
 function viewProductDetail(productId) {
   selectedProductId.value = productId;
-  currentPage.value = 'detail';
+  currentPage.value = "detail";
   window.scrollTo(0, 0);
 }
 </script>
@@ -67,21 +72,24 @@ function viewProductDetail(productId) {
 
     <main>
       <div v-if="isLoading" class="loader">Memuat data...</div>
-      
+
       <div v-else>
-        <HomePage 
-          v-if="currentPage === 'home'" 
+        <HomePage v-if="currentPage === 'home'" @navigate="navigateTo" />
+
+        <ProductPreviewPage
+          v-else-if="currentPage === 'preview'"
+          :products="previewProducts"
           @navigate="navigateTo"
+          @view-detail="viewProductDetail"
         />
-        
-        <CatalogPage 
+        <CatalogPage
           v-else-if="currentPage === 'catalog'"
           :products="products"
           @navigate="navigateTo"
           @view-detail="viewProductDetail"
         />
-        
-        <DetailPage 
+
+        <DetailPage
           v-else-if="currentPage === 'detail' && selectedProduct"
           :product="selectedProduct"
           :other-products="otherProducts"
@@ -96,7 +104,8 @@ function viewProductDetail(productId) {
 <style>
 /* Style global (jika ada) bisa ditaruh di sini atau di file main.css */
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif;
   margin: 0;
   background-color: #f0f2f5;
   color: #1c1e21;

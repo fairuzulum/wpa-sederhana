@@ -14,7 +14,7 @@ const emit = defineEmits(['navigate', 'view-detail']);
 <template>
   <div class="catalog-page">
     <div class="page-header">
-      <button @click="emit('navigate', 'home')" class="back-btn">&larr; Kembali ke Menu</button>
+      <button @click="emit('navigate', 'preview')" class="back-btn">&larr; Kembali ke Produk Unggulan</button>
       <h2>Semua Produk</h2>
     </div>
     <div v-if="products.length > 0" class="product-grid">
