@@ -1,33 +1,27 @@
 <script setup>
 import { ref, onMounted } from "vue";
-// 1. Impor komponen Swiper dari library
+// 1. Impor komponen Swiper
 import { Swiper, SwiperSlide } from 'swiper/vue';
 import { Autoplay, Pagination, Navigation } from 'swiper/modules';
 
-// 2. Impor CSS Swiper
+// 2. Impor library 'marked' untuk Rich Text
+import { marked } from 'marked';
+
+// 3. Impor CSS Swiper
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
 const products = ref([]);
-const banners = ref([]); // State baru untuk menampung data banner
+const banners = ref([]);
 const isLoading = ref(true);
 
-const STRAPI_BASE_URL = "https://katalog.hjkarpet.com/strapi-api";
+// 4. Update URL Strapi-mu
+const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
 const PRODUCTS_API_URL = `${STRAPI_BASE_URL}/api/products?populate=*`;
-const BANNERS_API_URL = `${STRAPI_BASE_URL}/api/banners?populate=*`; // URL API untuk banner
+const BANNERS_API_URL = `${STRAPI_BASE_URL}/api/banners?populate=*`;
 
-// Fungsi untuk memformat harga
-const formatPrice = (value) => {
-  if (isNaN(value)) return value;
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    minimumFractionDigits: 0
-  }).format(value);
-};
-
-// Fungsi untuk fetch kedua data (produk dan banner) secara bersamaan
+// Fungsi untuk fetch data (tidak perlu diubah)
 async function fetchData() {
   try {
     const [productsResponse, bannersResponse] = await Promise.all([
@@ -42,7 +36,9 @@ async function fetchData() {
     const productsData = await productsResponse.json();
     const bannersData = await bannersResponse.json();
 
+    // Data dari Strapi v4 ada di dalam properti .data
     products.value = Array.isArray(productsData.data) ? productsData.data : [];
+    // Untuk banner, kita asumsikan strukturnya flat atau sesuaikan jika perlu
     banners.value = Array.isArray(bannersData.data) ? bannersData.data : [];
 
   } catch (error) {
@@ -77,16 +73,13 @@ onMounted(() => {
             :loop="true"
             :pagination="{ clickable: true }"
             :navigation="true"
-            :autoplay="{
-              delay: 3500,
-              disableOnInteraction: false,
-            }"
+            :autoplay="{ delay: 3500, disableOnInteraction: false }"
           >
             <swiper-slide v-for="banner in banners" :key="banner.id">
               <img 
-                v-if="banner.image"
-                :src="`${STRAPI_BASE_URL}${banner.image.url}`" 
-                :alt="banner.title" 
+                v-if="banner.attributes.image.data"
+                :src="`${STRAPI_BASE_URL}${banner.attributes.image.data.attributes.url}`" 
+                :alt="banner.attributes.title" 
                 class="banner-image"
               />
             </swiper-slide>
@@ -96,38 +89,30 @@ onMounted(() => {
         <div class="product-section" v-if="products.length > 0">
           <div class="product-grid">
             <div v-for="product in products" :key="product.id" class="product-card">
+              
               <div class="gallery-container">
                 <div class="main-image-wrapper">
-                  <img v-if="product?.image?.length > 0" :src="`${STRAPI_BASE_URL}${product.image[0].url}`" :alt="product.name" class="main-image"/>
+                  <img v-if="product.attributes.images && product.attributes.images.data?.length > 0" :src="`${STRAPI_BASE_URL}${product.attributes.images.data[0].attributes.url}`" :alt="product.attributes.name" class="main-image"/>
                   <div v-else class="placeholder-image"><span>No Image</span></div>
                 </div>
-                <div class="thumbnail-strip" v-if="product?.image?.length > 1">
-                  <img v-for="img in product.image" :key="img.id" :src="`${STRAPI_BASE_URL}${img.formats.thumbnail.url}`" :alt="`Thumbnail ${img.name}`" class="thumbnail-image"/>
+                <div class="thumbnail-strip" v-if="product.attributes.images && product.attributes.images.data?.length > 1">
+                  <img v-for="img in product.attributes.images.data" :key="img.id" :src="`${STRAPI_BASE_URL}${img.attributes.formats.thumbnail.url}`" :alt="`Thumbnail ${img.attributes.name}`" class="thumbnail-image"/>
                 </div>
               </div>
+
               <div class="product-info">
-                <h2 class="product-name">{{ product.name }}</h2>
-                <div class="variant-section" v-if="product.daftar_varian && product.daftar_varian.length > 0">
-                  <p class="variant-title">Pilihan Varian & Harga:</p>
-                  <table class="variant-table">
-                    <thead>
-                      <tr>
-                        <th>Ukuran</th>
-                        <th>Ketebalan</th>
-                        <th>Harga</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="variant in product.daftar_varian" :key="variant.id">
-                        <td>{{ variant.ukuran }}</td>
-                        <td>{{ variant.ketebalan }}</td>
-                        <td>{{ formatPrice(variant.harga) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                <h2 class="product-name">{{ product.attributes.name }}</h2>
+                
+                <div class="description-section" v-if="product.attributes.deskripsi_1">
+                  <div class="description-content" v-html="marked(product.attributes.deskripsi_1)"></div>
                 </div>
-                <div v-else class="no-variants"><p>Informasi harga dan varian belum tersedia.</p></div>
+
+                <div class="description-section" v-if="product.attributes.deskripsi_2">
+                  <h4 class="description-title">Info Tambahan</h4>
+                  <div class="description-content" v-html="marked(product.attributes.deskripsi_2)"></div>
+                </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -141,7 +126,7 @@ onMounted(() => {
 </template>
 
 <style>
-/* General Styling */
+/* ... General Styling & Swiper styling tidak berubah ... */
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
@@ -166,14 +151,14 @@ header h1 {
   margin-bottom: 40px;
   border-radius: 12px;
   overflow: hidden;
-  position: relative; /* Diperlukan untuk positioning tombol navigasi */
+  position: relative;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 .banner-image {
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 16 / 7; /* Rasio yang lebih sinematik */
+  aspect-ratio: 16 / 7;
   object-fit: cover;
 }
 .swiper-pagination-bullet-active {
@@ -197,6 +182,7 @@ header h1 {
   font-size: 18px;
   font-weight: bold;
 }
+
 
 /* Product Section */
 .product-section {
@@ -225,7 +211,7 @@ header h1 {
 }
 .main-image-wrapper {
   width: 100%;
-  padding-top: 75%;
+  padding-top: 75%; /* Aspect ratio 4:3 */
   position: relative;
   background-color: #f0f2f5;
 }
@@ -271,40 +257,44 @@ header h1 {
   font-size: 1.5rem;
   font-weight: 600;
 }
-.variant-section {
-  flex-grow: 1;
+
+/* --- STYLE BARU UNTUK DESKRIPSI RICH TEXT --- */
+.description-section {
+  margin-top: 16px;
+  border-top: 1px solid #e0e0e0;
+  padding-top: 16px;
 }
-.variant-title {
+.description-title {
+  margin-top: 0;
+  margin-bottom: 8px;
   font-size: 1rem;
   font-weight: 600;
-  margin-bottom: 12px;
   color: #333;
 }
-.variant-table {
-  width: 100%;
-  border-collapse: collapse;
+.description-content {
   font-size: 0.95rem;
+  line-height: 1.6;
+  color: #333;
 }
-.variant-table th, .variant-table td {
-  text-align: left;
-  padding: 12px 8px;
-  border-bottom: 1px solid #e0e0e0;
+.description-content h1,
+.description-content h2,
+.description-content h3 {
+  margin: 16px 0 8px 0;
+  line-height: 1.3;
 }
-.variant-table th {
-  color: #65676b;
-  font-weight: 600;
+.description-content p {
+  margin: 0 0 12px 0;
 }
-.variant-table td:last-child {
-  font-weight: 600;
-  color: #007bff;
-  text-align: right;
+.description-content ul,
+.description-content ol {
+  padding-left: 20px;
+  margin-bottom: 12px;
 }
-.no-variants p {
-  color: #65676b;
-  font-style: italic;
+.description-content li {
+  margin-bottom: 4px;
 }
+/* --- AKHIR STYLE BARU --- */
 
-/* Loader */
 .loader {
   text-align: center;
   padding: 60px;
