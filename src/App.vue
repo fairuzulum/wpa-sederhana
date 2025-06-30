@@ -147,12 +147,12 @@ function goBack() {
 
 <template>
   <Navbar 
+    v-if="currentPage !== 'home'"
     @search-change="handleSearch"
     @navigate-home="goHome"
     @navigate-back="goBack"
   />
   <div class="app-container">
-
     <main>
       <div v-if="isLoading" class="loader">Memuat data...</div>
       <div v-else>
@@ -194,7 +194,6 @@ function goBack() {
     </main>
   </div>
 </template>
-
 <style>
 /* CSS Global Anda tidak perlu diubah */
 :root {
