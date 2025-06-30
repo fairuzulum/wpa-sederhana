@@ -5,15 +5,11 @@ const emit = defineEmits(["navigate"]);
 <template>
   <div class="home-page">
     <h2>Selamat Datang</h2>
-    <p>Silakan pilih menu di bawah ini</p>
     <div class="menu-buttons">
-      <button @click="emit('navigate', 'preview')" class="menu-btn">
+      <button @click="emit('navigate', 'category-menu')" class="menu-btn">
         Lihat Produk
       </button>
-      <button
-        @click="alert('Halaman portfolio belum dibuat.')"
-        class="menu-btn disabled"
-      >
+      <button @click="alert('Halaman portfolio belum dibuat.')" class="menu-btn disabled">
         Lihat Portfolio
       </button>
     </div>

@@ -13,12 +13,6 @@ const emit = defineEmits(["navigate", "view-detail"]);
 
 <template>
   <div class="catalog-page">
-    <div class="page-header">
-      <button @click="emit('navigate', 'preview')" class="back-btn">
-        &larr; Kembali ke Produk Unggulan
-      </button>
-      <h2>Semua Produk</h2>
-    </div>
     <div v-if="products.length > 0" class="product-grid">
       <ProductCard
         v-for="product in products"
@@ -32,27 +26,15 @@ const emit = defineEmits(["navigate", "view-detail"]);
 </template>
 
 <style scoped>
-/* Style ini spesifik untuk Halaman Katalog */
-
+/* Hapus style untuk .back-btn dan sesuaikan .page-header */
 .page-header {
   margin-bottom: 24px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  /* Tidak perlu flex lagi jika hanya ada judul */
 }
 .page-header h2 {
-  margin: 16px 0 0 0;
-}
-.back-btn {
-  background: none;
-  border: none;
-  font-size: 1rem;
-  color: #007bff;
-  cursor: pointer;
-  padding: 8px 0;
-}
-.back-btn:hover {
-  text-decoration: underline;
+  /* Hapus margin atas yang sebelumnya untuk memberi ruang pada tombol kembali */
+  margin: 0;
+  font-size: 1.8rem;
 }
 .loader {
   text-align: center;

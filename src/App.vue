@@ -1,33 +1,65 @@
 <script setup>
-// TIDAK ADA PERUBAHAN DI SINI
 import { ref, onMounted, computed, watch } from "vue";
 import { marked } from 'marked';
 import VueEasyLightbox from 'vue-easy-lightbox';
 import 'vue-easy-lightbox/dist/external-css/vue-easy-lightbox.css';
 
+// Import komponen Navbar yang baru
+import Navbar from './components/Navbar.vue';
+
+// Import semua halaman/views
 import HomePage from './views/HomePage.vue';
+import CategoryMenuPage from './views/CategoryMenuPage.vue';
 import CatalogPage from './views/CatalogPage.vue';
 import DetailPage from './views/DetailPage.vue';
 import ProductPreviewPage from './views/ProductPreviewPage.vue';
 
+
+// --- STATE MANAGEMENT ---
 const products = ref([]);
+const categories = ref([]);
+const heroBanners = ref([]);
 const isLoading = ref(true);
 const currentPage = ref('home');
 const selectedProductId = ref(null);
+const selectedCategoryId = ref(null);
+const searchQuery = ref(''); // State baru untuk menampung query pencarian
 
+// URL API
 const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
 const PRODUCTS_API_URL = `${STRAPI_BASE_URL}/api/products?populate=*`;
+const CATEGORIES_API_URL = `${STRAPI_BASE_URL}/api/categories?populate=*`;
+const HERO_BANNERS_API_URL = `${STRAPI_BASE_URL}/api/hero-banner-kategoris?populate=*`;
 
+// --- DATA LOGIC ---
 async function fetchData() {
   isLoading.value = true;
   try {
-    const response = await fetch(PRODUCTS_API_URL);
-    if (!response.ok) throw new Error('Gagal memuat data produk.');
-    const productsData = await response.json();
+    const [productsResponse, categoriesResponse, heroBannersResponse] = await Promise.all([
+      fetch(PRODUCTS_API_URL),
+      fetch(CATEGORIES_API_URL),
+      fetch(HERO_BANNERS_API_URL)
+    ]);
+    
+    if (!productsResponse.ok || !categoriesResponse.ok || !heroBannersResponse.ok) {
+      throw new Error('Gagal memuat data dari server.');
+    }
+
+    const productsData = await productsResponse.json();
+    const categoriesData = await categoriesResponse.json();
+    const heroBannersData = await heroBannersResponse.json();
+
     products.value = Array.isArray(productsData.data) ? productsData.data : [];
+    categories.value = Array.isArray(categoriesData.data) ? categoriesData.data : [];
+    
+    if (heroBannersData.data && Array.isArray(heroBannersData.data) && heroBannersData.data.length > 0) {
+      heroBanners.value = heroBannersData.data[0].images || [];
+    } else {
+      heroBanners.value = [];
+    }
+
   } catch (error) {
-    console.error("Terjadi kesalahan:", error);
-    products.value = [];
+    console.error("Terjadi kesalahan saat fetch data:", error);
   } finally {
     isLoading.value = false;
   }
@@ -37,23 +69,56 @@ onMounted(() => {
   fetchData();
 });
 
-const previewProducts = computed(() => {
-  return products.value.slice(0, 6);
+// --- COMPUTED PROPERTIES ---
+
+// 1. Computed property untuk memfilter produk berdasarkan pencarian
+const filteredProducts = computed(() => {
+  if (!searchQuery.value) {
+    return products.value; // Jika tidak ada query, kembalikan semua produk
+  }
+  const query = searchQuery.value.toLowerCase();
+  // Filter berdasarkan judul produk
+  return products.value.filter(product =>
+    product.title.toLowerCase().includes(query)
+  );
 });
 
-const selectedProduct = computed(() => {
-  return products.value.find(p => p.id === selectedProductId.value) || null;
+// 2. Computed property untuk katalog, sekarang menggunakan `filteredProducts` sebagai sumber
+const productsByCategory = computed(() => {
+  // Jika sedang mencari, langsung tampilkan hasil pencarian tanpa filter kategori
+  if (searchQuery.value) {
+      currentPage.value = 'catalog'; // Otomatis pindah ke halaman catalog saat mencari
+      return filteredProducts.value;
+  }
+  
+  // Jika tidak ada kategori yg dipilih, tampilkan semua produk
+  if (!selectedCategoryId.value) return products.value;
+  
+  // Jika ada kategori yg dipilih, filter dari semua produk (bukan dari hasil search)
+  return products.value.filter(product => 
+    product.categories && product.categories.some(cat => cat.id === selectedCategoryId.value)
+  );
 });
 
+const selectedProduct = computed(() => products.value.find(p => p.id === selectedProductId.value));
 const otherProducts = computed(() => {
   if (!selectedProduct.value) return [];
-  return products.value
-    .filter(p => p.id !== selectedProduct.value.id)
-    .slice(0, 2);
+  return products.value.filter(p => p.id !== selectedProduct.value.id).slice(0, 2);
 });
 
+// --- NAVIGATION & HANDLERS ---
+
 function navigateTo(page) {
+  searchQuery.value = ''; // Reset pencarian setiap kali navigasi manual
+  selectedCategoryId.value = null; // Reset kategori juga
   currentPage.value = page;
+  window.scrollTo(0, 0);
+}
+
+function selectCategoryAndGoToCatalog(categoryId) {
+  searchQuery.value = ''; // Reset pencarian
+  selectedCategoryId.value = categoryId;
+  currentPage.value = 'catalog';
   window.scrollTo(0, 0);
 }
 
@@ -62,17 +127,34 @@ function viewProductDetail(productId) {
   currentPage.value = 'detail';
   window.scrollTo(0, 0);
 }
+
+// Handler untuk event dari Navbar
+function handleSearch(query) {
+  searchQuery.value = query;
+}
+
+function goHome() {
+  navigateTo('home');
+}
+
+function goBack() {
+  // Menggunakan history browser untuk kembali ke halaman sebelumnya
+  // Ini adalah cara paling sederhana dan intuitif untuk tombol "kembali"
+  window.history.back();
+}
+
 </script>
 
 <template>
+  <Navbar 
+    @search-change="handleSearch"
+    @navigate-home="goHome"
+    @navigate-back="goBack"
+  />
   <div class="app-container">
-    <header>
-      <h1>Katalog Produk Digital</h1>
-    </header>
 
     <main>
       <div v-if="isLoading" class="loader">Memuat data...</div>
-      
       <div v-else>
         <HomePage 
           v-if="currentPage === 'home'" 
@@ -85,10 +167,18 @@ function viewProductDetail(productId) {
           @navigate="navigateTo"
           @view-detail="viewProductDetail"
         />
+
+        <CategoryMenuPage
+          v-else-if="currentPage === 'category-menu'"
+          :categories="categories"
+          :banners="heroBanners" 
+          @navigate="navigateTo"
+          @select-category="selectCategoryAndGoToCatalog"
+        />
         
         <CatalogPage 
           v-else-if="currentPage === 'catalog'"
-          :products="products"
+          :products="productsByCategory"
           @navigate="navigateTo"
           @view-detail="viewProductDetail"
         />
@@ -106,107 +196,46 @@ function viewProductDetail(productId) {
 </template>
 
 <style>
-/* ... Sebagian besar style sama ... */
+/* CSS Global Anda tidak perlu diubah */
+:root {
+  --primary-color: #007bff;
+  --text-color-dark: #1c1e21;
+  --bg-color: #ffffff;
+}
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   margin: 0;
-  background-color: #f0f2f5;
-  color: #1c1e21;
+  background-color: var(--bg-color);
+  color: var(--text-color-dark);
+  overflow-x: hidden;
 }
 .app-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 16px;
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 16px 16px 16px; /* Ubah padding atas jadi 0 karena sudah dihandle Navbar */
 }
-header h1 {
+.loader {
   text-align: center;
-  margin-bottom: 24px;
-  font-size: 1.8rem;
+  padding: 40px;
+  font-size: 1.2rem;
 }
-
-/* ============================================== */
-/* FOKUS PERUBAHAN CSS ADA DI SINI          */
-/* ============================================== */
-
-/* --- Product Grid Styling --- */
 .product-grid {
   display: grid;
-  /* Default untuk mobile tetap 1 kolom */
-  grid-template-columns: 1fr; 
-  gap: 20px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
 }
 
-/* --- Tablet (potrait) dan layar lebih besar --- */
 @media (min-width: 768px) {
   .app-container {
-    padding: 24px;
-  }
-  header h1 {
-    font-size: 2.2rem;
+    padding: 0 24px 24px 24px;
   }
   .product-grid {
-    /* Langsung menjadi 3 kolom */
     grid-template-columns: repeat(3, 1fr);
     gap: 24px;
   }
 }
-
-/* --- Desktop dengan layar lebih lebar --- */
-@media (min-width: 1200px) {
-   header h1 {
-    font-size: 2.5rem;
-  }
-  /* Tetap 3 kolom, tapi mungkin dengan gap lebih besar jika diinginkan */
-  .product-grid {
-     gap: 32px;
-  }
-}
-
-/* ============================================== */
-/* AKHIR DARI FOKUS PERUBAHAN CSS           */
-/* ============================================== */
-
-
-/* --- Detail Page Layout (Tidak berubah) --- */
-.detail-layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-@media (min-width: 768px) {
-  .detail-layout {
-    grid-template-columns: 1fr 1fr;
-    gap: 24px;
-  }
-}
-@media (min-width: 1024px) {
-  .detail-layout {
-    grid-template-columns: 2fr 3fr;
-    gap: 32px;
-  }
-}
-
-/* Sisa style lainnya tetap sama */
-.main-description,
-.description-section.bottom {
-  background: #fff;
-  padding: 20px;
-  border-radius: 12px;
-}
-.product-name {
-  margin-top: 0;
-  font-size: 1.5rem;
-}
-.main-image-wrapper {
-  padding-top: 100%;
-}
-.main-image, .placeholder-image { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; border-radius: 12px;}
-.placeholder-image { display: flex; justify-content: center; align-items: center; color: #8d949e; font-weight: 500; background-color: #f0f2f5; }
-.thumbnail-strip { display: flex; padding-top: 10px; gap: 10px; overflow-x: auto; }
-.thumbnail-image { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: border-color 0.2s; }
-.thumbnail-image:hover { opacity: 0.8; }
-.thumbnail-image.active { border-color: #007bff; }
-.other-products-section { margin-top: 48px; text-align: center; }
-.other-products-section hr { border: 0; height: 1px; background-color: #ddd; margin-bottom: 32px; }
-.other-products-section h3 { margin-bottom: 24px; }
 </style>
