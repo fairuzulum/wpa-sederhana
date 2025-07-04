@@ -375,10 +375,7 @@ function clearCacheAndReload() {
 
 <template>
   <div class="min-h-screen bg-gray-50">
-    <!-- Status Bar -->
-    <div v-if="isOffline" class="bg-orange-500 text-white text-center py-2 text-sm">
-      📱 Mode Offline - Data dari cache lokal
-    </div>
+  
     
     <!-- Loading Screen -->
     <div v-if="isLoading && !isInitialDataLoaded" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
