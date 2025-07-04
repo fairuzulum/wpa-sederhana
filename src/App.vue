@@ -60,12 +60,16 @@ function getFromLocalStorage(key) {
 // Fungsi untuk mengecek apakah cache masih valid (7 hari)
 function isCacheValid() {
   const lastUpdated = getFromLocalStorage(CACHE_KEYS.LAST_UPDATED);
-  if (!lastUpdated) return false;
+  if (!lastUpdated) {
+    console.log('No cache timestamp found');
+    return false;
+  }
   
   const now = new Date().getTime();
   const cacheAge = now - lastUpdated;
   const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 hari dalam milidetik
   
+  console.log('Cache age:', Math.floor(cacheAge / (1000 * 60 * 60)), 'hours');
   return cacheAge < maxAge;
 }
 
@@ -130,17 +134,45 @@ async function fetchAndCacheAllData() {
   downloadProgress.value = 0;
   
   try {
+    console.log('Starting fetchAndCacheAllData...');
+    
     // Cek apakah ada cache yang valid
     const cachedProducts = getFromLocalStorage(CACHE_KEYS.PRODUCTS);
     const cachedCategories = getFromLocalStorage(CACHE_KEYS.CATEGORIES);
     const cachedHeroBanners = getFromLocalStorage(CACHE_KEYS.HERO_BANNERS);
     
+    console.log('Cache check:', {
+      hasProducts: !!cachedProducts,
+      hasCategories: !!cachedCategories,
+      hasBanners: !!cachedHeroBanners,
+      isValid: isCacheValid()
+    });
+    
+    // Gunakan cache jika valid dan ada data
     if (cachedProducts && cachedCategories && cachedHeroBanners && isCacheValid()) {
       console.log('Using cached data');
       products.value = cachedProducts;
       categories.value = cachedCategories;
       heroBanners.value = cachedHeroBanners;
       isInitialDataLoaded.value = true;
+      downloadProgress.value = 100;
+      isLoading.value = false;
+      return;
+    }
+    
+    // Jika ada cache tapi expired, tetap gunakan dulu sambil fetch baru
+    if (cachedProducts && cachedCategories && cachedHeroBanners) {
+      console.log('Using expired cache while fetching new data');
+      products.value = cachedProducts;
+      categories.value = cachedCategories;
+      heroBanners.value = cachedHeroBanners;
+      isInitialDataLoaded.value = true;
+      isLoading.value = false; // Show app immediately
+    }
+    
+    // Fetch data baru jika perlu
+    if (!navigator.onLine) {
+      console.log('Offline - using available cache');
       downloadProgress.value = 100;
       return;
     }
@@ -166,19 +198,22 @@ async function fetchAndCacheAllData() {
     
     downloadProgress.value = 60;
     
-    // Extract dan preload semua gambar
-    const allImageUrls = [
-      ...extractImageUrls(processedProducts),
-      ...extractImageUrls(processedCategories),
-      ...extractImageUrls(processedHeroBanners)
-    ];
-    
-    console.log(`Preloading ${allImageUrls.length} images...`);
-    await preloadImages(allImageUrls);
+    // Hanya preload gambar jika belum pernah di-cache
+    if (!getFromLocalStorage(CACHE_KEYS.LAST_UPDATED)) {
+      // Extract dan preload semua gambar hanya untuk first time
+      const allImageUrls = [
+        ...extractImageUrls(processedProducts),
+        ...extractImageUrls(processedCategories),
+        ...extractImageUrls(processedHeroBanners)
+      ];
+      
+      console.log(`Preloading ${allImageUrls.length} images...`);
+      await preloadImages(allImageUrls);
+    }
     
     downloadProgress.value = 90;
     
-    // Simpan ke state
+    // Update state dengan data baru
     products.value = processedProducts;
     categories.value = processedCategories;
     heroBanners.value = processedHeroBanners;
@@ -192,7 +227,7 @@ async function fetchAndCacheAllData() {
     downloadProgress.value = 100;
     isInitialDataLoaded.value = true;
     
-    console.log('All data and images cached successfully!');
+    console.log('Data updated successfully!');
     
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -209,6 +244,9 @@ async function fetchAndCacheAllData() {
       heroBanners.value = cachedHeroBanners;
       isInitialDataLoaded.value = true;
       downloadProgress.value = 100;
+    } else {
+      console.error('No cache available and fetch failed');
+      isInitialDataLoaded.value = false;
     }
   } finally {
     isLoading.value = false;
@@ -226,13 +264,30 @@ function handleOffline() {
   console.log('App is offline');
 }
 
-onMounted(() => {
+onMounted(async () => {
+  console.log('App mounted, checking initial state...');
+  
   // Setup event listeners
   window.addEventListener('online', handleOnline);
   window.addEventListener('offline', handleOffline);
   
-  // Fetch data saat app dimuat
-  fetchAndCacheAllData();
+  // Cek apakah ada cache yang bisa digunakan segera
+  const cachedProducts = getFromLocalStorage(CACHE_KEYS.PRODUCTS);
+  const cachedCategories = getFromLocalStorage(CACHE_KEYS.CATEGORIES);
+  const cachedHeroBanners = getFromLocalStorage(CACHE_KEYS.HERO_BANNERS);
+  
+  // Jika ada cache, load dulu untuk UX yang lebih baik
+  if (cachedProducts && cachedCategories && cachedHeroBanners) {
+    console.log('Loading cached data immediately');
+    products.value = cachedProducts;
+    categories.value = cachedCategories;
+    heroBanners.value = cachedHeroBanners;
+    isInitialDataLoaded.value = true;
+    isLoading.value = false;
+  }
+  
+  // Kemudian fetch data baru jika perlu
+  await fetchAndCacheAllData();
 });
 
 // Computed properties (sama seperti sebelumnya)
@@ -296,14 +351,25 @@ function goBack() {
 
 // Fungsi untuk manual refresh data
 async function refreshData() {
+  console.log('Manual refresh triggered');
   // Hapus cache
   localStorage.removeItem(CACHE_KEYS.PRODUCTS);
   localStorage.removeItem(CACHE_KEYS.CATEGORIES);
   localStorage.removeItem(CACHE_KEYS.HERO_BANNERS);
   localStorage.removeItem(CACHE_KEYS.LAST_UPDATED);
   
+  // Reset state
+  isInitialDataLoaded.value = false;
+  
   // Fetch ulang
   await fetchAndCacheAllData();
+}
+
+// Fungsi untuk clear cache dan reload
+function clearCacheAndReload() {
+  console.log('Clearing cache and reloading...');
+  localStorage.clear();
+  window.location.reload();
 }
 </script>
 
@@ -315,7 +381,7 @@ async function refreshData() {
     </div>
     
     <!-- Loading Screen -->
-    <div v-if="isLoading" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div v-if="isLoading && !isInitialDataLoaded" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
       <div class="text-center">
         <div class="mb-4">
           <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
@@ -329,8 +395,16 @@ async function refreshData() {
       </div>
     </div>
     
+    <!-- Background Loading for Updates -->
+    <div v-if="isLoading && isInitialDataLoaded" class="fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-40">
+      <div class="flex items-center space-x-2">
+        <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <span class="text-sm">Memperbarui data...</span>
+      </div>
+    </div>
+    
     <!-- Main App -->
-    <div v-if="!isLoading && isInitialDataLoaded">
+    <div v-if="isInitialDataLoaded">
       <Navbar
         v-if="currentPage !== 'home'"
         @search-change="handleSearch"
@@ -384,13 +458,21 @@ async function refreshData() {
       <div class="text-center">
         <div class="text-6xl mb-4">😞</div>
         <h2 class="text-xl font-semibold mb-2">Tidak dapat memuat data</h2>
-        <p class="text-gray-600 mb-4">Periksa koneksi internet Anda</p>
-        <button 
-          @click="fetchAndCacheAllData"
-          class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Coba Lagi
-        </button>
+        <p class="text-gray-600 mb-4">Periksa koneksi internet Anda dan coba lagi</p>
+        <div class="space-y-2">
+          <button 
+            @click="fetchAndCacheAllData"
+            class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors block mx-auto"
+          >
+            Coba Lagi
+          </button>
+          <button 
+            @click="clearCacheAndReload"
+            class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors block mx-auto"
+          >
+            Hapus Cache & Reload
+          </button>
+        </div>
       </div>
     </div>
   </div>
