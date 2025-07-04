@@ -3,49 +3,25 @@ const emit = defineEmits(["navigate"]);
 </script>
 
 <template>
-  <div class="home-page">
-    <h2>Selamat Datang</h2>
-    <div class="menu-buttons">
-      <button @click="emit('navigate', 'category-menu')" class="menu-btn">
-        Lihat Produk
+  <div className="flex min-h-screen flex-col items-center justify-center bg-gray-100">
+    
+    <div className="flex flex-col md:flex-row gap-6">
+
+      <button 
+        @click="emit('navigate', 'category-menu')" 
+        className="inline-flex items-center justify-center rounded-lg w-64 h-20 text-2xl font-bold bg-blue-600 hover:bg-blue-700 text-white transition-colors"
+      >
+        Products
       </button>
-      <button @click="alert('Halaman portfolio belum dibuat.')" class="menu-btn disabled">
-        Lihat Portfolio
+
+      <button 
+        @click="alert('Halaman portfolio belum dibuat.')" 
+        className="inline-flex items-center justify-center rounded-lg w-64 h-20 text-2xl font-bold border border-slate-300 bg-transparent text-slate-500 opacity-70 cursor-not-allowed"
+        disabled
+      >
+        Portfolio
       </button>
+
     </div>
   </div>
 </template>
-
-<style scoped>
-/* Style ini spesifik untuk Halaman Home */
-.home-page {
-  text-align: center;
-  padding: 40px 20px;
-}
-.menu-buttons {
-  margin-top: 32px;
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-}
-.menu-btn {
-  padding: 12px 24px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  border-radius: 8px;
-  border: 2px solid #007bff;
-  background-color: #007bff;
-  color: white;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.menu-btn:hover {
-  background-color: #0056b3;
-  border-color: #0056b3;
-}
-.menu-btn.disabled {
-  background-color: #ccc;
-  border-color: #ccc;
-  cursor: not-allowed;
-}
-</style>

@@ -9,53 +9,35 @@ const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
 </script>
 
 <template>
-  <div class="product-card-simple">
-    <div class="card-image-wrapper">
-      <img v-if="product.images && product.images.length > 0" :src="`${STRAPI_BASE_URL}${product.images[0].url}`" :alt="product.name"/>
-      <div v-else class="placeholder-image"><span>No Image</span></div>
+  <div class="bg-white rounded-3xl shadow-lg overflow-hidden transition-all duration-200 cursor-pointer hover:-translate-y-1 hover:shadow-xl">
+    <div class="relative w-full aspect-square bg-gray-100">
+      <template v-if="product.images && product.images.length > 0">
+        <img 
+          :src="`${STRAPI_BASE_URL}${product.images[0].url}`" 
+          :alt="product.name"
+          class="w-full h-full object-cover"
+        />
+        <div class="absolute inset-0 flex items-center justify-center" style="background-color: rgba(0, 0, 0, 0.4);">
+          <h3 class="text-white text-xl font-semibold text-center px-4">
+            {{ product.name }}
+          </h3>
+        </div>
+      </template>
+      
+      <template v-else>
+        <div class="w-full h-full flex items-center justify-center">
+          <div class="text-center">
+            <span class="text-gray-500 font-medium">No Image</span>
+            <h3 class="text-gray-700 text-lg font-semibold mt-2">
+              {{ product.name }}
+            </h3>
+          </div>
+        </div>
+      </template>
     </div>
-    <h3 class="card-name">{{ product.name }}</h3>
   </div>
 </template>
 
 <style scoped>
-/* Style ini spesifik untuk kartu produk simpel */
-.product-card-simple {
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
-  transition: all 0.2s ease;
-  cursor: pointer;
-}
-.product-card-simple:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-.card-image-wrapper {
-  width: 100%;
-  aspect-ratio: 1 / 1;
-  background-color: #f0f2f5;
-}
-.card-image-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.card-name {
-  padding: 16px;
-  font-size: 1.1rem;
-  font-weight: 600;
-  text-align: center;
-  margin: 0;
-}
-.placeholder-image {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: #8d949e;
-  font-weight: 500;
-  width: 100%;
-  height: 100%;
-}
+/* Tidak perlu CSS tambahan karena semuanya menggunakan Tailwind */
 </style>

@@ -1,6 +1,9 @@
 <script setup>
 import ProductCard from "../components/ProductCard.vue";
 
+// tailwind
+import "../style.css";
+
 defineProps({
   products: {
     type: Array,
@@ -12,8 +15,8 @@ const emit = defineEmits(["navigate", "view-detail"]);
 </script>
 
 <template>
-  <div class="catalog-page">
-    <div v-if="products.length > 0" class="product-grid">
+  <div className="py-6">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
       <ProductCard
         v-for="product in products"
         :key="product.id"
@@ -21,25 +24,9 @@ const emit = defineEmits(["navigate", "view-detail"]);
         @click="emit('view-detail', product.id)"
       />
     </div>
-    <div v-else class="loader">Produk tidak ditemukan.</div>
+
+    <div v-if="products.length === 0" className="text-center text-gray-500 text-lg py-16">
+      Produk tidak ditemukan.
+    </div>
   </div>
 </template>
-
-<style scoped>
-/* Hapus style untuk .back-btn dan sesuaikan .page-header */
-.page-header {
-  margin-bottom: 24px;
-  /* Tidak perlu flex lagi jika hanya ada judul */
-}
-.page-header h2 {
-  /* Hapus margin atas yang sebelumnya untuk memberi ruang pada tombol kembali */
-  margin: 0;
-  font-size: 1.8rem;
-}
-.loader {
-  text-align: center;
-  padding: 60px;
-  font-size: 1.5rem;
-  color: #65676b;
-}
-</style>
