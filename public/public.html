@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline - Katalog Produk</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 2rem;
+            max-width: 400px;
+        }
+        
+        .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            line-height: 1.5;
+        }
+        
+        .btn {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            padding: 0.8rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: rgba(255, 255, 255, 0.5);
+            transform: translateY(-2px);
+        }
+        
+        .status {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon pulse">📱</div>
+        <h1>Mode Offline</h1>
+        <p>Anda sedang offline, tetapi aplikasi katalog masih dapat digunakan dengan data yang telah disimpan di perangkat Anda.</p>
+        
+        <a href="/" class="btn">Kembali ke Aplikasi</a>
+        
+        <div class="status">
+            <p id="status-text">Memeriksa koneksi...</p>
+        </div>
+    </div>
+    
+    <script>
+        function updateStatus() {
+            const statusText = document.getElementById('status-text');
+            if (navigator.onLine) {
+                statusText.textContent = '✅ Koneksi tersedia - Klik tombol di atas untuk kembali';
+                statusText.style.color = '#4ade80';
+            } else {
+                statusText.textContent = '❌ Tidak ada koneksi internet';
+                statusText.style.color = '#f87171';
+            }
+        }
+        
+        // Update status saat halaman dimuat
+        updateStatus();
+        
+        // Listen untuk perubahan status koneksi
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+        
+        // Update status setiap 5 detik
+        setInterval(updateStatus, 5000);
+    </script>
+</body>
+</html>
