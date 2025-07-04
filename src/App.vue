@@ -15,7 +15,6 @@ const products = ref([]);
 const categories = ref([]);
 const heroBanners = ref([]);
 const isLoading = ref(true);
-const isOffline = ref(!navigator.onLine);
 const currentPage = ref('home');
 const selectedProductId = ref(null);
 const selectedCategoryId = ref(null);
@@ -30,9 +29,9 @@ async function fetchData() {
   isLoading.value = true;
   try {
     const [productsResponse, categoriesResponse, heroBannersResponse] = await Promise.all([
-      fetch(PRODUCTS_API_URL, { cache: 'force-cache' }), // Use cache if available
-      fetch(CATEGORIES_API_URL, { cache: 'force-cache' }),
-      fetch(HERO_BANNERS_API_URL, { cache: 'force-cache' })
+      fetch(PRODUCTS_API_URL),
+      fetch(CATEGORIES_API_URL),
+      fetch(HERO_BANNERS_API_URL)
     ]);
 
     if (!productsResponse.ok || !categoriesResponse.ok || !heroBannersResponse.ok) {
@@ -51,11 +50,6 @@ async function fetchData() {
 
   } catch (error) {
     console.error("Terjadi kesalahan saat fetch data:", error);
-    if (isOffline.value) {
-      alert('Anda sedang offline. Data ditampilkan dari cache.');
-    } else {
-      alert('Gagal memuat data. Silakan coba lagi nanti.');
-    }
   } finally {
     isLoading.value = false;
   }
@@ -63,15 +57,6 @@ async function fetchData() {
 
 onMounted(() => {
   fetchData();
-
-  // Listen for online/offline status changes
-  window.addEventListener('online', () => {
-    isOffline.value = false;
-    fetchData(); // Refresh data when back online
-  });
-  window.addEventListener('offline', () => {
-    isOffline.value = true;
-  });
 });
 
 const filteredProducts = computed(() => {
@@ -143,9 +128,7 @@ function goBack() {
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
     <main>
       <div v-if="isLoading" class="text-center py-16 text-lg text-gray-600">Memuat data...</div>
-      <div v-else-if="isOffline && products.value.length === 0 && categories.value.length === 0" class="text-center py-16 text-lg text-red-600">
-        Anda sedang offline dan tidak ada data di cache. Silakan sambungkan ke internet untuk memuat data.
-      </div>
+
       <div v-else>
         <HomePage
           v-if="currentPage === 'home'"
