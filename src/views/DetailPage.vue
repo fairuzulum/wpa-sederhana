@@ -70,13 +70,13 @@ watch(() => props.product, (newProduct) => {
           />
           <div v-else className="absolute top-0 left-0 w-full h-full flex items-center justify-center text-gray-500 font-medium">No Image</div>
         </div>
-        <div v-if="product.images?.length > 1" className="flex justify-center pt-2 gap-2 overflow-x-auto">
+        <div v-if="product.images?.length > 1" className="flex justify-center pt-2 gap-2 overflow-x-auto ">
           <img 
             v-for="img in product.images" 
             :key="img.id" 
             :src="`${STRAPI_BASE_URL}${img.formats.thumbnail.url}`" 
             :alt="`Thumbnail ${img.name}`" 
-            className="w-16 h-16 object-cover rounded-md cursor-pointer border-2 border-transparent hover:opacity-100"
+            className="w-16 h-16 object-cover rounded-md cursor-pointer border border-gray rounded-lg bg-white hover:opacity-100"
             :className="{ 'border-blue-500 opacity-100': selectedImage && selectedImage.id === img.id, 'opacity-70': !(selectedImage && selectedImage.id === img.id) }"
             @click="changeMainImage(img)"
           />
