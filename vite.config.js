@@ -57,7 +57,7 @@ export default defineConfig({
       // Konfigurasi manifest
       manifest: {
         name: 'Katalog Produk Digital',
-        short_name: 'Katalog',
+        short_name: 'HJ E-Catalogue',
         description: 'Katalog produk interaktif untuk tim marketing - Offline Ready',
         theme_color: '#ffffff',
         background_color: '#ffffff',
