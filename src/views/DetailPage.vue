@@ -56,9 +56,7 @@ watch(() => props.product, (newProduct) => {
 
 <template>
   <div className="container mx-auto px-4">
-    <div className="mb-6 flex flex-col items-start">
-      <button @click="emit('navigate', 'catalog')" className="text-blue-600 text-base p-2 bg-transparent border-none cursor-pointer">← Kembali ke Katalog</button>
-    </div>
+   
 
     <div v-if="product" className="grid grid-cols-1 md:grid-cols-[2fr_3fr] gap-8">
       <div className="gallery-container">

@@ -346,7 +346,22 @@ function goHome() {
 }
 
 function goBack() {
-  window.history.back();
+  console.log('goBack called, current page:', currentPage.value);
+  let targetPage;
+  switch (currentPage.value) {
+    case 'category-menu':
+      targetPage = 'home';
+      break;
+    case 'catalog':
+      targetPage = 'category-menu';
+      break;
+    case 'detail':
+      targetPage = 'catalog';
+      break;
+    default:
+      targetPage = 'home'; // Fallback untuk halaman lain
+  }
+  navigateTo(targetPage);
 }
 
 // Fungsi untuk manual refresh data
