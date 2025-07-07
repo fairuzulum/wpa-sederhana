@@ -313,7 +313,7 @@ const productsByCategory = computed(() => {
 const selectedProduct = computed(() => products.value.find(p => p.id === selectedProductId.value));
 const otherProducts = computed(() => {
   if (!selectedProduct.value) return [];
-  return products.value.filter(p => p.id !== selectedProduct.value.id).slice(0, 2);
+  return products.value.filter(p => p.id !== selectedProduct.value.id).slice(0, 4);
 });
 
 // Navigation functions (sama seperti sebelumnya)
