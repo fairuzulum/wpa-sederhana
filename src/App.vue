@@ -386,9 +386,11 @@ const otherProducts = computed(() => {
 });
 
 // Navigation functions
-function navigateTo(page) {
+function navigateTo(page, preserveCategory = false) {
   searchQuery.value = '';
-  selectedCategoryId.value = null;
+  if (!preserveCategory) {
+    selectedCategoryId.value = null; // Hanya reset kalau preserveCategory false
+  }
   currentPage.value = page;
   window.scrollTo(0, 0);
 }
@@ -417,6 +419,7 @@ function goHome() {
 function goBack() {
   console.log('goBack called, current page:', currentPage.value);
   let targetPage;
+  let preserveCategory = false;
   switch (currentPage.value) {
     case 'category-menu':
       targetPage = 'home';
@@ -426,11 +429,12 @@ function goBack() {
       break;
     case 'detail':
       targetPage = 'catalog';
+      preserveCategory = true; // Jaga selectedCategoryId
       break;
     default:
       targetPage = 'home';
   }
-  navigateTo(targetPage);
+  navigateTo(targetPage, preserveCategory);
 }
 
 // Fungsi untuk manual refresh data
