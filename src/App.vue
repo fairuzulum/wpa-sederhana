@@ -381,11 +381,26 @@ onMounted(async () => {
 
 // Computed properties
 const filteredProducts = computed(() => {
-  if (!searchQuery.value) return products.value;
-  const query = searchQuery.value.toLowerCase();
-  return products.value.filter((product) =>
-    product.title.toLowerCase().includes(query)
-  );
+  let baseProducts = products.value;
+
+  // Jika ada kategori yang dipilih, filter produk berdasarkan kategori
+  if (selectedCategoryId.value) {
+    baseProducts = products.value.filter(
+      (product) =>
+        product.categories &&
+        product.categories.some((cat) => cat.id === selectedCategoryId.value)
+    );
+  }
+
+  // Jika ada query pencarian, filter produk berdasarkan query
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase();
+    return baseProducts.filter((product) =>
+      product.title.toLowerCase().includes(query)
+    );
+  }
+
+  return baseProducts;
 });
 
 const productsByCategory = computed(() => {
@@ -415,7 +430,7 @@ const otherProducts = computed(() => {
 function navigateTo(page, preserveCategory = false) {
   searchQuery.value = "";
   if (!preserveCategory) {
-    selectedCategoryId.value = null; // Hanya reset kalau preserveCategory false
+    selectedCategoryId.value = null;
   }
   currentPage.value = page;
   window.scrollTo(0, 0);
@@ -455,7 +470,7 @@ function goBack() {
       break;
     case "detail":
       targetPage = "catalog";
-      preserveCategory = true; // Jaga selectedCategoryId
+      preserveCategory = true;
       break;
     default:
       targetPage = "home";
@@ -559,7 +574,7 @@ function clearCacheAndReload() {
         @navigate-back="goBack"
       />
 
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-4">
         <main>
           <HomePage
             v-if="currentPage === 'home'"
@@ -586,6 +601,7 @@ function clearCacheAndReload() {
           <CatalogPage
             v-else-if="currentPage === 'catalog'"
             :products="productsByCategory"
+            :search-query="searchQuery"
             @navigate="navigateTo"
             @view-detail="viewProductDetail"
           />

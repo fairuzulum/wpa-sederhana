@@ -18,7 +18,7 @@ function handleInput() {
 </script>
 
 <template>
-  <nav className="bg-white border-b px-6 py-3 border-gray-200 sticky top-0 rounded-xl mb-5 z-[1000] w-full">
+  <nav className="bg-white border-b px-6 py-3 border-gray-200 rounded-xl mb-5 z-[1000] w-full">
     <div className="w-full flex justify-between items-center gap-4 sm:gap-6">
       
       <!-- Logo dengan jarak -->
