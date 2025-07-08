@@ -379,7 +379,7 @@ onMounted(async () => {
   await fetchAndCacheAllData();
 });
 
-// Computed properties
+// Computed properties - PERBAIKAN UTAMA ADA DI SINI
 const filteredProducts = computed(() => {
   let baseProducts = products.value;
 
@@ -393,22 +393,40 @@ const filteredProducts = computed(() => {
   }
 
   // Jika ada query pencarian, filter produk berdasarkan query
-  if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    return baseProducts.filter((product) =>
-      product.title.toLowerCase().includes(query)
-    );
+  if (searchQuery.value && searchQuery.value.trim() !== "") {
+    const query = searchQuery.value.toLowerCase().trim();
+    return baseProducts.filter((product) => {
+      // Cari di name
+      const nameMatch = product.name && product.name.toLowerCase().includes(query);
+      
+      // Cari di description jika ada
+      const descriptionMatch = product.description && product.description.toLowerCase().includes(query);
+      
+      // Cari di kategori
+      const categoryMatch = product.categories && product.categories.some(cat => 
+        cat.name && cat.name.toLowerCase().includes(query)
+      );
+      
+      return nameMatch || descriptionMatch || categoryMatch;
+    });
   }
 
   return baseProducts;
 });
 
+// Computed property untuk produk berdasarkan kategori - DIPERBAIKI
 const productsByCategory = computed(() => {
-  if (searchQuery.value) {
-    currentPage.value = "catalog";
+  // Jika ada pencarian, gunakan filteredProducts
+  if (searchQuery.value && searchQuery.value.trim() !== "") {
     return filteredProducts.value;
   }
-  if (!selectedCategoryId.value) return products.value;
+  
+  // Jika tidak ada kategori yang dipilih, tampilkan semua produk
+  if (!selectedCategoryId.value) {
+    return products.value;
+  }
+  
+  // Filter berdasarkan kategori yang dipilih
   return products.value.filter(
     (product) =>
       product.categories &&
@@ -419,6 +437,7 @@ const productsByCategory = computed(() => {
 const selectedProduct = computed(() =>
   products.value.find((p) => p.id === selectedProductId.value)
 );
+
 const otherProducts = computed(() => {
   if (!selectedProduct.value) return [];
   return products.value
@@ -428,6 +447,7 @@ const otherProducts = computed(() => {
 
 // Navigation functions
 function navigateTo(page, preserveCategory = false) {
+  // Reset pencarian saat navigasi
   searchQuery.value = "";
   if (!preserveCategory) {
     selectedCategoryId.value = null;
@@ -437,6 +457,7 @@ function navigateTo(page, preserveCategory = false) {
 }
 
 function selectCategoryAndGoToCatalog(categoryId) {
+  // Reset pencarian saat memilih kategori
   searchQuery.value = "";
   selectedCategoryId.value = categoryId;
   currentPage.value = "catalog";
@@ -449,8 +470,15 @@ function viewProductDetail(productId) {
   window.scrollTo(0, 0);
 }
 
+// PERBAIKAN UTAMA: Fungsi handleSearch yang diperbaiki
 function handleSearch(query) {
+  console.log("Search query received:", query);
   searchQuery.value = query;
+  
+  // Jika ada pencarian, pastikan kita di halaman catalog
+  if (query && query.trim() !== "" && currentPage.value !== "catalog") {
+    currentPage.value = "catalog";
+  }
 }
 
 function goHome() {
@@ -650,3 +678,4 @@ function clearCacheAndReload() {
 <style>
 /* Kosongkan CSS custom, semua via Tailwind sekarang */
 </style>
+
