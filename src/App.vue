@@ -1,15 +1,15 @@
 <script setup>
 import { ref, onMounted, computed } from "vue";
-import { marked } from 'marked';
-import VueEasyLightbox from 'vue-easy-lightbox';
-import 'vue-easy-lightbox/dist/external-css/vue-easy-lightbox.css';
+import { marked } from "marked";
+import VueEasyLightbox from "vue-easy-lightbox";
+import "vue-easy-lightbox/dist/external-css/vue-easy-lightbox.css";
 
-import Navbar from './components/Navbar.vue';
-import HomePage from './views/HomePage.vue';
-import CategoryMenuPage from './views/CategoryMenuPage.vue';
-import CatalogPage from './views/CatalogPage.vue';
-import DetailPage from './views/DetailPage.vue';
-import ProductPreviewPage from './views/ProductPreviewPage.vue';
+import Navbar from "./components/Navbar.vue";
+import HomePage from "./views/HomePage.vue";
+import CategoryMenuPage from "./views/CategoryMenuPage.vue";
+import CatalogPage from "./views/CatalogPage.vue";
+import DetailPage from "./views/DetailPage.vue";
+import ProductPreviewPage from "./views/ProductPreviewPage.vue";
 
 const products = ref([]);
 const categories = ref([]);
@@ -18,12 +18,12 @@ const isLoading = ref(true);
 const isInitialDataLoaded = ref(false);
 const isOffline = ref(!navigator.onLine);
 const downloadProgress = ref(0);
-const currentPage = ref('home');
+const currentPage = ref("home");
 const selectedProductId = ref(null);
 const selectedCategoryId = ref(null);
-const searchQuery = ref('');
+const searchQuery = ref("");
 const isSyncing = ref(false);
-const syncMessage = ref('');
+const syncMessage = ref("");
 
 const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
 const PRODUCTS_API_URL = `${STRAPI_BASE_URL}/api/products?populate=*`;
@@ -32,11 +32,11 @@ const HERO_BANNERS_API_URL = `${STRAPI_BASE_URL}/api/hero-banner-kategoris?popul
 
 // Cache keys untuk localStorage
 const CACHE_KEYS = {
-  PRODUCTS: 'katalog_products_cache',
-  CATEGORIES: 'katalog_categories_cache',
-  HERO_BANNERS: 'katalog_hero_banners_cache',
-  LAST_UPDATED: 'katalog_last_updated',
-  IMAGES: 'katalog_images_cache'
+  PRODUCTS: "katalog_products_cache",
+  CATEGORIES: "katalog_categories_cache",
+  HERO_BANNERS: "katalog_hero_banners_cache",
+  LAST_UPDATED: "katalog_last_updated",
+  IMAGES: "katalog_images_cache",
 };
 
 // Fungsi untuk menyimpan data ke localStorage
@@ -44,7 +44,7 @@ function saveToLocalStorage(key, data) {
   try {
     localStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
-    console.error('Error saving to localStorage:', error);
+    console.error("Error saving to localStorage:", error);
   }
 }
 
@@ -54,7 +54,7 @@ function getFromLocalStorage(key) {
     const data = localStorage.getItem(key);
     return data ? JSON.parse(data) : null;
   } catch (error) {
-    console.error('Error reading from localStorage:', error);
+    console.error("Error reading from localStorage:", error);
     return null;
   }
 }
@@ -63,52 +63,58 @@ function getFromLocalStorage(key) {
 function isCacheValid() {
   const lastUpdated = getFromLocalStorage(CACHE_KEYS.LAST_UPDATED);
   if (!lastUpdated) {
-    console.log('No cache timestamp found');
+    console.log("No cache timestamp found");
     return false;
   }
-  
+
   const now = new Date().getTime();
   const cacheAge = now - lastUpdated;
   const maxAge = 7 * 24 * 60 * 60 * 1000; // 7 hari dalam milidetik
-  
-  console.log('Cache age:', Math.floor(cacheAge / (1000 * 60 * 60)), 'hours');
+
+  console.log("Cache age:", Math.floor(cacheAge / (1000 * 60 * 60)), "hours");
   return cacheAge < maxAge;
 }
 
 // Fungsi untuk preload gambar
 async function preloadImages(imageUrls) {
-  const imagePromises = imageUrls.map(url => {
+  const imagePromises = imageUrls.map((url) => {
     return new Promise((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve(url);
       img.onerror = () => resolve(url);
-      img.src = url.startsWith('http') ? url : `${STRAPI_BASE_URL}${url}`;
+      img.src = url.startsWith("http") ? url : `${STRAPI_BASE_URL}${url}`;
     });
   });
-  
+
   return Promise.all(imagePromises);
 }
 
 // Fungsi untuk mengekstrak semua URL gambar dari data
 function extractImageUrls(data) {
   const imageUrls = new Set();
-  
+
   function extractFromObject(obj) {
-    if (!obj || typeof obj !== 'object') return;
-    
+    if (!obj || typeof obj !== "object") return;
+
     for (const key in obj) {
       const value = obj[key];
-      
-      if (typeof value === 'string' && (value.includes('.jpg') || value.includes('.jpeg') || value.includes('.png') || value.includes('.webp'))) {
+
+      if (
+        typeof value === "string" &&
+        (value.includes(".jpg") ||
+          value.includes(".jpeg") ||
+          value.includes(".png") ||
+          value.includes(".webp"))
+      ) {
         imageUrls.add(value);
       } else if (Array.isArray(value)) {
-        value.forEach(item => extractFromObject(item));
-      } else if (typeof value === 'object') {
+        value.forEach((item) => extractFromObject(item));
+      } else if (typeof value === "object") {
         extractFromObject(value);
       }
     }
   }
-  
+
   extractFromObject(data);
   return Array.from(imageUrls);
 }
@@ -128,8 +134,8 @@ async function fetchWithRetry(url, retries = 3) {
           break;
         }
         const query = new URLSearchParams({
-          'pagination[page]': page,
-          'pagination[pageSize]': pageSize
+          "pagination[page]": page,
+          "pagination[pageSize]": pageSize,
         }).toString();
         const fetchUrl = `${url}&${query}`;
         console.log(`Fetching: ${fetchUrl}`);
@@ -153,7 +159,7 @@ async function fetchWithRetry(url, retries = 3) {
     } catch (error) {
       console.error(`Attempt ${i + 1} failed for ${url}:`, error);
       if (i === retries - 1) throw error;
-      await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+      await new Promise((resolve) => setTimeout(resolve, 1000 * (i + 1)));
     }
   }
 }
@@ -162,29 +168,34 @@ async function fetchWithRetry(url, retries = 3) {
 async function fetchAndCacheAllData() {
   isLoading.value = true;
   downloadProgress.value = 0;
-  
+
   try {
-    console.log('Starting fetchAndCacheAllData...');
-    
+    console.log("Starting fetchAndCacheAllData...");
+
     // Reset state
     products.value = [];
     categories.value = [];
     heroBanners.value = [];
-    
+
     // Cek cache
     const cachedProducts = getFromLocalStorage(CACHE_KEYS.PRODUCTS);
     const cachedCategories = getFromLocalStorage(CACHE_KEYS.CATEGORIES);
     const cachedHeroBanners = getFromLocalStorage(CACHE_KEYS.HERO_BANNERS);
-    
-    console.log('Cache check:', {
+
+    console.log("Cache check:", {
       hasProducts: !!cachedProducts,
       hasCategories: !!cachedCategories,
       hasBanners: !!cachedHeroBanners,
-      isValid: isCacheValid()
+      isValid: isCacheValid(),
     });
-    
-    if (cachedProducts && cachedCategories && cachedHeroBanners && isCacheValid()) {
-      console.log('Using cached data');
+
+    if (
+      cachedProducts &&
+      cachedCategories &&
+      cachedHeroBanners &&
+      isCacheValid()
+    ) {
+      console.log("Using cached data");
       products.value = cachedProducts;
       categories.value = cachedCategories;
       heroBanners.value = cachedHeroBanners;
@@ -193,81 +204,87 @@ async function fetchAndCacheAllData() {
       isLoading.value = false;
       return;
     }
-    
+
     if (cachedProducts && cachedCategories && cachedHeroBanners) {
-      console.log('Using expired cache while fetching new data');
+      console.log("Using expired cache while fetching new data");
       products.value = cachedProducts;
       categories.value = cachedCategories;
       heroBanners.value = cachedHeroBanners;
       isInitialDataLoaded.value = true;
       isLoading.value = false;
     }
-    
+
     if (!navigator.onLine) {
-      console.log('Offline - using available cache');
+      console.log("Offline - using available cache");
       downloadProgress.value = 100;
       return;
     }
-    
-    console.log('Fetching fresh data...');
+
+    console.log("Fetching fresh data...");
     downloadProgress.value = 10;
-    
+
     const [productsData, categoriesData, heroBannersData] = await Promise.all([
       fetchWithRetry(PRODUCTS_API_URL),
       fetchWithRetry(CATEGORIES_API_URL),
-      fetchWithRetry(HERO_BANNERS_API_URL)
+      fetchWithRetry(HERO_BANNERS_API_URL),
     ]);
-    
+
     downloadProgress.value = 40;
-    
-    const processedProducts = Array.isArray(productsData.data) ? productsData.data : [];
-    const processedCategories = Array.isArray(categoriesData.data) ? categoriesData.data : [];
-    const processedHeroBanners = (heroBannersData.data && Array.isArray(heroBannersData.data) && heroBannersData.data.length > 0)
-      ? heroBannersData.data[0].images || []
+
+    const processedProducts = Array.isArray(productsData.data)
+      ? productsData.data
       : [];
-    
+    const processedCategories = Array.isArray(categoriesData.data)
+      ? categoriesData.data
+      : [];
+    const processedHeroBanners =
+      heroBannersData.data &&
+      Array.isArray(heroBannersData.data) &&
+      heroBannersData.data.length > 0
+        ? heroBannersData.data[0].images || []
+        : [];
+
     downloadProgress.value = 60;
-    
+
     const allImageUrls = [
       ...extractImageUrls(processedProducts),
       ...extractImageUrls(processedCategories),
-      ...extractImageUrls(processedHeroBanners)
+      ...extractImageUrls(processedHeroBanners),
     ];
     console.log(`Preloading ${allImageUrls.length} images...`);
     await preloadImages(allImageUrls);
-    
+
     downloadProgress.value = 90;
-    
+
     products.value = processedProducts;
     categories.value = processedCategories;
     heroBanners.value = processedHeroBanners;
-    
+
     saveToLocalStorage(CACHE_KEYS.PRODUCTS, processedProducts);
     saveToLocalStorage(CACHE_KEYS.CATEGORIES, processedCategories);
     saveToLocalStorage(CACHE_KEYS.HERO_BANNERS, processedHeroBanners);
     saveToLocalStorage(CACHE_KEYS.LAST_UPDATED, new Date().getTime());
-    
+
     downloadProgress.value = 100;
     isInitialDataLoaded.value = true;
-    
-    console.log('Data updated successfully!');
-    
+
+    console.log("Data updated successfully!");
   } catch (error) {
     console.error("Error fetching data:", error);
-    
+
     const cachedProducts = getFromLocalStorage(CACHE_KEYS.PRODUCTS);
     const cachedCategories = getFromLocalStorage(CACHE_KEYS.CATEGORIES);
     const cachedHeroBanners = getFromLocalStorage(CACHE_KEYS.HERO_BANNERS);
-    
+
     if (cachedProducts && cachedCategories && cachedHeroBanners) {
-      console.log('Using cached data as fallback');
+      console.log("Using cached data as fallback");
       products.value = cachedProducts;
       categories.value = cachedCategories;
       heroBanners.value = cachedHeroBanners;
       isInitialDataLoaded.value = true;
       downloadProgress.value = 100;
     } else {
-      console.error('No cache available and fetch failed');
+      console.error("No cache available and fetch failed");
       isInitialDataLoaded.value = false;
     }
   } finally {
@@ -278,14 +295,16 @@ async function fetchAndCacheAllData() {
 // Fungsi untuk sync cache dengan Strapi (hapus cache dan download ulang)
 async function syncCacheWithStrapi() {
   if (!navigator.onLine) {
-    syncMessage.value = 'Tidak ada koneksi internet!';
-    setTimeout(() => { syncMessage.value = ''; }, 3000);
+    syncMessage.value = "Tidak ada koneksi internet!";
+    setTimeout(() => {
+      syncMessage.value = "";
+    }, 3000);
     return;
   }
 
   if (isSyncing.value) return;
   isSyncing.value = true;
-  syncMessage.value = 'Menyinkronkan data...';
+  syncMessage.value = "Menyinkronkan data...";
   downloadProgress.value = 0;
 
   try {
@@ -295,67 +314,68 @@ async function syncCacheWithStrapi() {
     localStorage.removeItem(CACHE_KEYS.HERO_BANNERS);
     localStorage.removeItem(CACHE_KEYS.LAST_UPDATED);
     localStorage.removeItem(CACHE_KEYS.IMAGES);
-    
+
     // Reset state
     products.value = [];
     categories.value = [];
     heroBanners.value = [];
     isInitialDataLoaded.value = false;
-    
+
     downloadProgress.value = 10;
-    
+
     // Fetch ulang semua data
     await fetchAndCacheAllData();
-    
-    syncMessage.value = 'Sinkronisasi selesai!';
-    console.log('Sync completed with full data refresh');
-    
+
+    syncMessage.value = "Sinkronisasi selesai!";
+    console.log("Sync completed with full data refresh");
   } catch (error) {
-    console.error('Error syncing data:', error);
-    syncMessage.value = 'Gagal menyinkronkan data. Coba lagi.';
+    console.error("Error syncing data:", error);
+    syncMessage.value = "Gagal menyinkronkan data. Coba lagi.";
   } finally {
     isSyncing.value = false;
-    setTimeout(() => { syncMessage.value = ''; }, 3000);
+    setTimeout(() => {
+      syncMessage.value = "";
+    }, 3000);
   }
 }
 
 // Event listeners untuk status online/offline
 function handleOnline() {
   isOffline.value = false;
-  console.log('App is online');
+  console.log("App is online");
 }
 
 function handleOffline() {
   isOffline.value = true;
-  console.log('App is offline');
+  console.log("App is offline");
 }
 
 onMounted(async () => {
-  console.log('App mounted, checking initial state...');
-  
+  console.log("App mounted, checking initial state...");
+
   // Setup event listeners
-  window.addEventListener('online', handleOnline);
-  window.addEventListener('offline', handleOffline);
-  
+  window.addEventListener("online", handleOnline);
+  window.addEventListener("offline", handleOffline);
+
   // Reset state
   products.value = [];
   categories.value = [];
   heroBanners.value = [];
-  
+
   // Cek cache
   const cachedProducts = getFromLocalStorage(CACHE_KEYS.PRODUCTS);
   const cachedCategories = getFromLocalStorage(CACHE_KEYS.CATEGORIES);
   const cachedHeroBanners = getFromLocalStorage(CACHE_KEYS.HERO_BANNERS);
-  
+
   if (cachedProducts && cachedCategories && cachedHeroBanners) {
-    console.log('Loading cached data immediately');
+    console.log("Loading cached data immediately");
     products.value = cachedProducts;
     categories.value = cachedCategories;
     heroBanners.value = cachedHeroBanners;
     isInitialDataLoaded.value = true;
     isLoading.value = false;
   }
-  
+
   await fetchAndCacheAllData();
 });
 
@@ -363,31 +383,37 @@ onMounted(async () => {
 const filteredProducts = computed(() => {
   if (!searchQuery.value) return products.value;
   const query = searchQuery.value.toLowerCase();
-  return products.value.filter(product =>
+  return products.value.filter((product) =>
     product.title.toLowerCase().includes(query)
   );
 });
 
 const productsByCategory = computed(() => {
   if (searchQuery.value) {
-    currentPage.value = 'catalog';
+    currentPage.value = "catalog";
     return filteredProducts.value;
   }
   if (!selectedCategoryId.value) return products.value;
-  return products.value.filter(product =>
-    product.categories && product.categories.some(cat => cat.id === selectedCategoryId.value)
+  return products.value.filter(
+    (product) =>
+      product.categories &&
+      product.categories.some((cat) => cat.id === selectedCategoryId.value)
   );
 });
 
-const selectedProduct = computed(() => products.value.find(p => p.id === selectedProductId.value));
+const selectedProduct = computed(() =>
+  products.value.find((p) => p.id === selectedProductId.value)
+);
 const otherProducts = computed(() => {
   if (!selectedProduct.value) return [];
-  return products.value.filter(p => p.id !== selectedProduct.value.id).slice(0, 4);
+  return products.value
+    .filter((p) => p.id !== selectedProduct.value.id)
+    .slice(0, 5);
 });
 
 // Navigation functions
 function navigateTo(page, preserveCategory = false) {
-  searchQuery.value = '';
+  searchQuery.value = "";
   if (!preserveCategory) {
     selectedCategoryId.value = null; // Hanya reset kalau preserveCategory false
   }
@@ -396,15 +422,15 @@ function navigateTo(page, preserveCategory = false) {
 }
 
 function selectCategoryAndGoToCatalog(categoryId) {
-  searchQuery.value = '';
+  searchQuery.value = "";
   selectedCategoryId.value = categoryId;
-  currentPage.value = 'catalog';
+  currentPage.value = "catalog";
   window.scrollTo(0, 0);
 }
 
 function viewProductDetail(productId) {
   selectedProductId.value = productId;
-  currentPage.value = 'detail';
+  currentPage.value = "detail";
   window.scrollTo(0, 0);
 }
 
@@ -413,33 +439,33 @@ function handleSearch(query) {
 }
 
 function goHome() {
-  navigateTo('home');
+  navigateTo("home");
 }
 
 function goBack() {
-  console.log('goBack called, current page:', currentPage.value);
+  console.log("goBack called, current page:", currentPage.value);
   let targetPage;
   let preserveCategory = false;
   switch (currentPage.value) {
-    case 'category-menu':
-      targetPage = 'home';
+    case "category-menu":
+      targetPage = "home";
       break;
-    case 'catalog':
-      targetPage = 'category-menu';
+    case "catalog":
+      targetPage = "category-menu";
       break;
-    case 'detail':
-      targetPage = 'catalog';
+    case "detail":
+      targetPage = "catalog";
       preserveCategory = true; // Jaga selectedCategoryId
       break;
     default:
-      targetPage = 'home';
+      targetPage = "home";
   }
   navigateTo(targetPage, preserveCategory);
 }
 
 // Fungsi untuk manual refresh data
 async function refreshData() {
-  console.log('Manual refresh triggered');
+  console.log("Manual refresh triggered");
   localStorage.removeItem(CACHE_KEYS.PRODUCTS);
   localStorage.removeItem(CACHE_KEYS.CATEGORIES);
   localStorage.removeItem(CACHE_KEYS.HERO_BANNERS);
@@ -454,7 +480,7 @@ async function refreshData() {
 
 // Fungsi untuk clear cache dan reload
 function clearCacheAndReload() {
-  console.log('Clearing cache and reloading...');
+  console.log("Clearing cache and reloading...");
   localStorage.clear();
   products.value = [];
   categories.value = [];
@@ -466,43 +492,68 @@ function clearCacheAndReload() {
 <template>
   <div class="min-h-screen bg-gray-50">
     <!-- Loading Screen -->
-    <div v-if="isLoading && !isInitialDataLoaded" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div
+      v-if="isLoading && !isInitialDataLoaded"
+      class="fixed inset-0 bg-white z-50 flex items-center justify-center"
+    >
       <div class="text-center">
         <div class="mb-4">
-          <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
+          <div
+            class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"
+          ></div>
         </div>
         <h2 class="text-xl font-semibold mb-2">Memuat Katalog...</h2>
-        <p class="text-gray-600 mb-4">Mengunduh data dan gambar untuk penggunaan offline</p>
+        <p class="text-gray-600 mb-4">
+          Mengunduh data dan gambar untuk penggunaan offline
+        </p>
         <div class="w-64 bg-gray-200 rounded-full h-2 mx-auto">
-          <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="{ width: `${downloadProgress}%` }"></div>
+          <div
+            class="bg-blue-600 h-2 rounded-full transition-all duration-300"
+            :style="{ width: `${downloadProgress}%` }"
+          ></div>
         </div>
         <p class="text-sm text-gray-500 mt-2">{{ downloadProgress }}%</p>
       </div>
     </div>
-    
+
     <!-- Background Loading for Updates -->
-    <div v-if="isLoading && isInitialDataLoaded" class="fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-40">
+    <div
+      v-if="isLoading && isInitialDataLoaded"
+      class="fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-40"
+    >
       <div class="flex items-center space-x-2">
-        <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <div
+          class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+        ></div>
         <span class="text-sm">Memperbarui data...</span>
       </div>
     </div>
-    
+
     <!-- Sync Feedback -->
-    <div v-if="isSyncing || syncMessage" class="fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-40">
+    <div
+      v-if="isSyncing || syncMessage"
+      class="fixed top-20 right-4 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-40"
+    >
       <div class="flex items-center space-x-2">
-        <div v-if="isSyncing" class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        <div
+          v-if="isSyncing"
+          class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"
+        ></div>
         <span class="text-sm">{{ syncMessage }}</span>
       </div>
       <div v-if="isSyncing" class="w-32 bg-gray-200 rounded-full h-1 mt-2">
-        <div class="bg-white h-1 rounded-full transition-all duration-300" :style="{ width: `${downloadProgress}%` }"></div>
+        <div
+          class="bg-white h-1 rounded-full transition-all duration-300"
+          :style="{ width: `${downloadProgress}%` }"
+        ></div>
       </div>
     </div>
-    
+
     <!-- Main App -->
     <div v-if="isInitialDataLoaded">
       <Navbar
         v-if="currentPage !== 'home'"
+        :currentPage="currentPage"
         @search-change="handleSearch"
         @navigate-home="goHome"
         @navigate-back="goBack"
@@ -549,21 +600,26 @@ function clearCacheAndReload() {
         </main>
       </div>
     </div>
-    
+
     <!-- Error State -->
-    <div v-if="!isLoading && !isInitialDataLoaded" class="fixed inset-0 bg-white z-50 flex items-center justify-center">
+    <div
+      v-if="!isLoading && !isInitialDataLoaded"
+      class="fixed inset-0 bg-white z-50 flex items-center justify-center"
+    >
       <div class="text-center">
         <div class="text-6xl mb-4">😞</div>
         <h2 class="text-xl font-semibold mb-2">Tidak dapat memuat data</h2>
-        <p class="text-gray-600 mb-4">Periksa koneksi internet Anda dan coba lagi</p>
+        <p class="text-gray-600 mb-4">
+          Periksa koneksi internet Anda dan coba lagi
+        </p>
         <div class="space-y-2">
-          <button 
+          <button
             @click="fetchAndCacheAllData"
             class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors block mx-auto"
           >
             Coba Lagi
           </button>
-          <button 
+          <button
             @click="clearCacheAndReload"
             class="bg-gray-600 text-white px-6 py-2 rounded-lg hover:bg-gray-700 transition-colors block mx-auto"
           >

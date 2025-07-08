@@ -1,7 +1,13 @@
 <script setup>
-// Bagian script tidak berubah
 import { ref } from 'vue';
 import myLogo from '../assets/logo.png';
+
+defineProps({
+  currentPage: {
+    type: String,
+    required: true
+  }
+});
 
 const emit = defineEmits(['search-change', 'navigate-home', 'navigate-back']);
 const searchQuery = ref('');
@@ -12,16 +18,16 @@ function handleInput() {
 </script>
 
 <template>
-  <nav className="bg-white border-b p-4 border-gray-200 py-3 sticky top-0 rounded-xl mb-5 z-[1000] w-full">
-    <div className="w-full flex justify-between items-center">
+  <nav className="bg-white border-b px-6 py-3 border-gray-200 sticky top-0 rounded-xl mb-5 z-[1000] w-full">
+    <div className="w-full flex justify-between items-center gap-4 sm:gap-6">
       
-      <!-- Logo mentok ke kiri -->
+      <!-- Logo dengan jarak -->
       <div className="flex-shrink-0">
-        <img :src="myLogo" alt="App Logo" className="h-[85px] cursor-pointer" @click="emit('navigate-home')" />
+        <img :src="myLogo" alt="App Logo" className="h-[60px] lg:h-[85px] cursor-pointer" @click="emit('navigate-home')" />
       </div>
 
-      <!-- Search di tengah -->
-      <div className="flex-1 flex justify-center">
+      <!-- Search di tengah, hanya muncul di CatalogPage -->
+      <div v-if="currentPage === 'catalog'" className="flex-1 flex justify-center">
         <div className="relative w-full max-w-[600px]">
           <!-- Search Icon -->
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -40,8 +46,10 @@ function handleInput() {
           />
         </div>
       </div>
+      <!-- Spacer kosong untuk menjaga layout -->
+      <div v-else className="flex-1"></div>
 
-      <!-- Tombol back mentok ke kanan -->
+      <!-- Tombol back dengan jarak -->
       <div className="flex-shrink-0">
         <button @click="emit('navigate-back')" className="bg-blue-600 text-white p-2 rounded-full w-8 h-8 flex items-center justify-center hover:bg-blue-800 transition-colors" title="Kembali">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>

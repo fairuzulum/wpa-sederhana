@@ -18,7 +18,7 @@ const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
           class="w-full h-full object-cover"
         />
         <div class="absolute inset-0 flex items-center justify-center" style="background-color: rgba(0, 0, 0, 0.4);">
-          <h3 class="text-white text-xl font-semibold text-center px-4">
+         <h3 class="text-white text-sm sm:text-xl font-semibold text-center px-4">
             {{ product.name }}
           </h3>
         </div>

@@ -1,5 +1,4 @@
 <script setup>
-// Bagian <script> tidak perlu diubah sama sekali
 import { Swiper, SwiperSlide } from "swiper/vue";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 import "swiper/css";
@@ -18,7 +17,7 @@ const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
 <template>
   <div className="container mx-auto px-4">
     <div
-      className="relative overflow-hidden w-full mb-8 rounded-xl shadow-lg"
+      className="relative overflow-hidden w-full mb-8 rounded-xl shadow-lg hidden sm:block"
       v-if="banners && banners.length > 0"
     >
       <swiper
@@ -41,7 +40,7 @@ const STRAPI_BASE_URL = "https://strapi.fairuzulum.me";
       <div className="swiper-pagination bottom-2"></div>
     </div>
 
-    <div className="mt-6">
+    <div className="mt-6 sm:mt-6">
       <div
         v-if="categories.length > 0"
         className="grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6"

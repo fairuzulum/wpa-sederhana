@@ -96,7 +96,7 @@ watch(() => props.product, (newProduct) => {
     <div v-if="otherProducts.length > 0" className="mt-12 text-center">
       <hr className="border-0 h-px bg-gray-300 mb-8">
       <h3 className="mb-6 text-xl font-semibold">Produk Lainnya</h3>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 max-w-4xl mx-auto mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-4 md:gap-6 mx-auto mb-8">
         <ProductCard 
           v-for="other_product in otherProducts" 
           :key="other_product.id" 
