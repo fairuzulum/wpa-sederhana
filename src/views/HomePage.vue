@@ -12,13 +12,13 @@ const emit = defineEmits(["navigate", "refresh-data", "sync-data"]);
         Products
       </button>
 
-      <button 
+      <!-- <button 
         @click="alert('Halaman portfolio belum dibuat.')" 
         class="inline-flex items-center justify-center rounded-lg w-64 h-20 text-2xl font-bold border border-slate-300 bg-transparent text-slate-500 opacity-70 cursor-not-allowed"
         disabled
       >
         Portfolio
-      </button>
+      </button> -->
 
       <button 
         @click="emit('sync-data')" 
