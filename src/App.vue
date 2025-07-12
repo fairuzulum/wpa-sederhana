@@ -438,12 +438,29 @@ const selectedProduct = computed(() =>
   products.value.find((p) => p.id === selectedProductId.value)
 );
 
+// const otherProducts = computed(() => {
+//   if (!selectedProduct.value) return [];
+//   return products.value
+//     .filter((p) => p.id !== selectedProduct.value.id)
+//     .slice(0, 5);
+// });
+
 const otherProducts = computed(() => {
   if (!selectedProduct.value) return [];
+
+  // Mendapatkan kategori produk yang sedang ditampilkan
+  const selectedCategories = selectedProduct.value.categories;
+
+  // Filter produk lain yang memiliki kategori yang sama
   return products.value
-    .filter((p) => p.id !== selectedProduct.value.id)
-    .slice(0, 5);
+    .filter((p) => 
+      p.id !== selectedProduct.value.id && 
+      p.categories && 
+      p.categories.some((cat) => selectedCategories.some(selectedCat => selectedCat.id === cat.id))
+    )
+    .slice(0, 5); // Tampilkan hanya 5 produk lainnya
 });
+
 
 // Navigation functions
 function navigateTo(page, preserveCategory = false) {
