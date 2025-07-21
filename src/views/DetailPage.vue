@@ -70,7 +70,7 @@ watch(
         <div
           className="relative w-full pt-[100%] bg-gray-100 rounded-xl overflow-hidden"
         >
-          <img
+            <img
             v-if="selectedImage"
             :src="`${STRAPI_BASE_URL}${selectedImage.url}`"
             :alt="product.name"
@@ -86,7 +86,7 @@ watch(
         </div>
         <div
           v-if="product.images?.length > 1"
-          className="flex justify-center pt-2 gap-2 overflow-x-auto "
+          className="flex justify-start pt-2 gap-2 overflow-x-auto "
         >
           <img
             v-for="img in product.images"
